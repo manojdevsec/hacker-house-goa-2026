@@ -1,0 +1,999 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1" />
+<title>Hacker Goa House 2026 — Builder ID</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700;9..144,900&family=Fraunces:ital,opsz,wght@1,9..144,500&family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap');
+
+  :root{
+    --forest:#0e4530;
+    --forest-deep:#031f16;
+    --laterite:#a8462a;
+    --laterite-deep:#7c331c;
+    --gold:#c9a227;
+    --gold-soft:#e3c169;
+    --azul:#2f6f86;
+    --azul-soft:#5c96a8;
+    --cream:#f2e8d3;
+    --cream-dim:#cabb96;
+    --ink:#0c1f16;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:
+      radial-gradient(circle at 12% -5%, rgba(227,193,105,0.09), transparent 42%),
+      radial-gradient(circle at 100% 20%, rgba(47,111,134,0.10), transparent 40%),
+      var(--forest-deep);
+    color:var(--cream);
+    font-family:'Space Grotesk', sans-serif;
+    min-height:100vh;
+    -webkit-font-smoothing:antialiased;
+  }
+
+  .tilestrip{
+    height:14px; width:100%;
+    background-image:
+      linear-gradient(45deg, var(--gold) 25%, transparent 25%, transparent 75%, var(--gold) 75%),
+      linear-gradient(45deg, var(--gold) 25%, transparent 25%, transparent 75%, var(--gold) 75%);
+    background-size: 14px 14px;
+    background-position: 0 0, 7px 7px;
+    background-color: var(--azul);
+    opacity:0.85;
+  }
+
+  .wrap{ max-width:1160px; margin:0 auto; padding:44px 22px 64px; }
+
+  header{
+    text-align:center; max-width:640px; margin:0 auto 36px;
+    display:flex; flex-direction:column; align-items:center; gap:10px;
+  }
+  .eyebrow{
+    font-family:'JetBrains Mono', monospace; font-size:11.5px;
+    letter-spacing:0.22em; text-transform:uppercase; color:var(--gold-soft);
+    display:flex; align-items:center; gap:10px;
+  }
+  .eyebrow::before, .eyebrow::after{ content:''; width:26px; height:1px; background:var(--gold-soft); opacity:0.6; }
+  h1{
+    font-family:'Fraunces', serif; font-weight:800; font-size:clamp(32px, 5.6vw, 56px);
+    line-height:0.98; margin:4px 0 2px; color:var(--cream); letter-spacing:-0.01em;
+  }
+  h1 em{ font-style:italic; font-weight:500; color:var(--laterite); }
+  .sub{ font-size:15px; color:var(--cream-dim); max-width:460px; line-height:1.55; }
+
+  .steps{ display:flex; gap:26px; margin-top:8px; flex-wrap:wrap; justify-content:center; }
+  .step{ font-family:'JetBrains Mono', monospace; font-size:11px; letter-spacing:.06em; color:var(--azul-soft); display:flex; align-items:center; gap:6px; }
+  .step b{ color:var(--gold-soft); font-weight:700; }
+
+  main{ display:grid; grid-template-columns: 1fr 380px; gap:36px; align-items:start; }
+  @media (max-width:900px){ main{grid-template-columns:1fr;} }
+
+  .stage{
+    background:linear-gradient(180deg, rgba(255,255,255,0.025), rgba(0,0,0,0.18));
+    border:1px solid rgba(230,189,111,0.14); border-radius:20px; padding:30px;
+    display:flex; flex-direction:column; align-items:center; gap:18px;
+  }
+
+  .canvas-shell{
+    position:relative; width:100%; max-width:380px; aspect-ratio: 1000/1500;
+    touch-action:none; border-radius:14px; overflow:hidden;
+    box-shadow: 0 24px 60px -20px rgba(0,0,0,0.65);
+  }
+  #previewCanvas{ width:100%; height:100%; display:block; cursor:grab; background:var(--cream); }
+  #previewCanvas.dragging{ cursor:grabbing; }
+  #previewCanvas.empty{ cursor:pointer; }
+
+  .zoom-row{ width:100%; max-width:380px; display:flex; align-items:center; gap:12px; }
+  .zoom-row label{ font-family:'JetBrains Mono', monospace; font-size:11px; color:var(--gold-soft); letter-spacing:.08em; text-transform:uppercase; white-space:nowrap; }
+  input[type=range]{ flex:1; accent-color:var(--laterite); }
+  .hint{ font-size:12px; color:var(--cream-dim); opacity:0.8; font-family:'JetBrains Mono', monospace; text-align:center; }
+
+  .panel{ display:flex; flex-direction:column; gap:16px; }
+  .card{
+    background:linear-gradient(180deg, rgba(255,255,255,0.025), rgba(0,0,0,0.15));
+    border:1px solid rgba(230,189,111,0.14); border-radius:14px; padding:18px;
+  }
+  .card h3{ font-family:'JetBrains Mono', monospace; font-size:11px; letter-spacing:.1em; text-transform:uppercase; color:var(--azul-soft); margin:0 0 10px; }
+
+  .field{ display:flex; flex-direction:column; gap:6px; margin-bottom:12px; }
+  .field:last-child{ margin-bottom:0; }
+  .field label{ font-family:'JetBrains Mono', monospace; font-size:10.5px; letter-spacing:.08em; text-transform:uppercase; color:var(--gold-soft); }
+  input[type=text], textarea{
+    width:100%; background:rgba(0,0,0,0.22); border:1px solid rgba(230,189,111,0.22);
+    border-radius:8px; color:var(--cream); font-family:'Space Grotesk', sans-serif;
+    font-size:13.5px; padding:10px; line-height:1.45;
+  }
+  input[type=text]:focus, textarea:focus{ outline:none; border-color:var(--gold); }
+  textarea{ resize:none; }
+
+  .btn{
+    width:100%; display:flex; align-items:center; justify-content:center; gap:8px;
+    padding:14px 16px; border-radius:10px; border:none; font-family:'Space Grotesk',sans-serif;
+    font-weight:600; font-size:14.5px; cursor:pointer;
+    transition:transform .12s ease, filter .12s ease, opacity .12s ease;
+  }
+  .btn:disabled{ opacity:0.35; cursor:not-allowed; }
+  .btn:not(:disabled):hover{ transform:translateY(-1px); }
+  .btn-primary{ background:var(--laterite); color:var(--cream); box-shadow: 0 8px 20px -8px rgba(168,70,42,0.6); }
+  .btn-primary:not(:disabled):hover{ filter:brightness(1.08); }
+  .btn-secondary{ background:transparent; color:var(--cream); border:1px solid rgba(230,189,111,0.35); }
+  .btn-secondary:not(:disabled):hover{ border-color:var(--gold); }
+  .btn-x{ background:var(--cream); color:var(--forest-deep); }
+  .btn-x:not(:disabled):hover{ filter:brightness(0.97); }
+  .btn-row{ display:flex; flex-direction:column; gap:10px; }
+
+  .status{ font-family:'JetBrains Mono', monospace; font-size:12px; color:var(--azul-soft); min-height:16px; margin-top:10px; }
+  .status.err{ color:var(--laterite); }
+  .status.ok{ color:var(--gold-soft); }
+
+  footer{ margin-top:48px; text-align:center; font-family:'JetBrains Mono', monospace; font-size:11px; letter-spacing:.08em; color:rgba(242,232,211,0.3); }
+
+  .stamp-note{ font-size:12px; color:var(--cream-dim); line-height:1.55; }
+
+  input[type=file]{ display:none; }
+
+  @keyframes lift{ from{opacity:0; transform:translateY(10px);} to{opacity:1; transform:translateY(0);} }
+  .stage, .panel .card{ animation: lift .5s ease both; }
+  .panel .card:nth-child(2){ animation-delay:.05s; }
+  .panel .card:nth-child(3){ animation-delay:.1s; }
+  .panel .card:nth-child(4){ animation-delay:.15s; }
+</style>
+</head>
+<body>
+  <div class="tilestrip"></div>
+  <div class="wrap">
+    <header>
+      <span class="eyebrow">Hacker Goa House · 2026</span>
+      <h1>Your Builder ID,<br/><em>Goa</em>-stamped.</h1>
+      <p class="sub">A photo, a name, a title — sealed and ready to post. Built in Goa, shipped from paradise.</p>
+      <div class="steps">
+        <span class="step"><b>01</b> add your details</span>
+        <span class="step"><b>02</b> frame the shot</span>
+        <span class="step"><b>03</b> stamp & ship</span>
+      </div>
+    </header>
+
+    <main>
+      <div class="stage">
+        <div class="canvas-shell">
+          <canvas id="previewCanvas" width="1000" height="1500" class="empty"></canvas>
+        </div>
+        <input type="file" id="fileInput" accept="image/*,.heic,.heif" />
+
+        <div class="zoom-row" id="zoomRow" style="display:none">
+          <label>Zoom</label>
+          <input type="range" id="zoomSlider" min="100" max="300" value="100" />
+        </div>
+        <p class="hint" id="mainHint">tap the card to drop in a photo · jpg, png or HEIC</p>
+      </div>
+
+      <div class="panel">
+        <div class="card">
+          <h3>Builder details</h3>
+          <div class="field">
+            <label>Name</label>
+            <input type="text" id="nameInput" maxlength="24" placeholder="Your name" />
+          </div>
+          <div class="field">
+            <label>Role / stack</label>
+            <input type="text" id="roleInput" maxlength="26" placeholder="e.g. backend, security, ml" />
+          </div>
+        </div>
+
+        <div class="card">
+          <h3>Export</h3>
+          <div class="btn-row">
+            <button class="btn btn-primary" id="downloadBtn" disabled>Download PNG</button>
+            <button class="btn btn-x" id="shareBtn" disabled>Share to X</button>
+            <button class="btn btn-secondary" id="resetBtn" disabled>Start over</button>
+          </div>
+          <p class="status" id="statusMsg"></p>
+        </div>
+
+        <div class="card">
+          <h3>Note</h3>
+          <p class="stamp-note">On phones with native share support, "Share to X" attaches the image directly. Elsewhere it downloads the card and opens X with your caption ready — just attach the image that downloaded.</p>
+        </div>
+      </div>
+    </main>
+
+    <footer>hacker goa house · 2026 · builder id generator</footer>
+  </div>
+
+<script>
+(function(){
+  const fileInput = document.getElementById('fileInput');
+  const canvas = document.getElementById('previewCanvas');
+  const ctx = canvas.getContext('2d');
+  const zoomRow = document.getElementById('zoomRow');
+  const zoomSlider = document.getElementById('zoomSlider');
+  const mainHint = document.getElementById('mainHint');
+  const downloadBtn = document.getElementById('downloadBtn');
+  const shareBtn = document.getElementById('shareBtn');
+  const resetBtn = document.getElementById('resetBtn');
+  const statusMsg = document.getElementById('statusMsg');
+  const DEFAULT_CAPTION = 'Built in Goa. Shipped from paradise. 🌴🛥️ #FrameInGoa';
+  const nameInput = document.getElementById('nameInput');
+  const roleInput = document.getElementById('roleInput');
+
+  const W = 1000, H = 1500;
+
+  const PHOTO = { cx: 500, cy: 610, r: 210 };
+  const STAMP = { cx: PHOTO.cx + PHOTO.r*0.98, cy: PHOTO.cy + PHOTO.r*0.02, w: 158, h: 208, rot: -9 };
+  const PANEL = { x0: 60, y0: 838, x1: 940, y1: 1460, r: 26 };
+  const HORIZON = 800;
+  const SEA_BOTTOM = 1010;
+
+  let img = null;
+  let imgNatural = {w:0,h:0};
+  let offset = {x:0, y:0};
+  let zoom = 1;
+  let baseScale = 1;
+  let dragging = false;
+  let dragStart = null;
+  let idCode = 'HGH-2026-0000';
+  const usedCodes = new Set();
+
+  // ---------- offscreen static background (illustrated Goa scene) ----------
+  const bg = document.createElement('canvas');
+  bg.width = W; bg.height = H;
+  const bctx = bg.getContext('2d');
+  renderBackground(bctx);
+
+  function roundRect(c, x, y, w, h, r){
+    c.beginPath();
+    c.moveTo(x+r, y);
+    c.arcTo(x+w, y, x+w, y+h, r);
+    c.arcTo(x+w, y+h, x, y+h, r);
+    c.arcTo(x, y+h, x, y, r);
+    c.arcTo(x, y, x+w, y, r);
+    c.closePath();
+  }
+
+  function drawHouse(c, baseX, baseY, w, h, wallColor, roofColor){
+    const roofH = h*0.45;
+    c.fillStyle = wallColor;
+    c.fillRect(baseX, baseY-h+roofH, w, h-roofH);
+    c.beginPath();
+    c.moveTo(baseX-7, baseY-h+roofH);
+    c.lineTo(baseX+w/2, baseY-h);
+    c.lineTo(baseX+w+7, baseY-h+roofH);
+    c.closePath();
+    c.fillStyle = roofColor;
+    c.fill();
+    c.fillStyle = 'rgba(12,31,22,0.45)';
+    c.fillRect(baseX+w*0.38, baseY-h*0.34, w*0.24, h*0.34);
+    c.fillStyle = 'rgba(242,232,211,0.65)';
+    const ww = w*0.16;
+    c.fillRect(baseX+w*0.12, baseY-h*0.66, ww, ww);
+    c.fillRect(baseX+w*0.72, baseY-h*0.66, ww, ww);
+  }
+
+  function drawPalm(c, baseX, baseY, height, lean){
+    c.save();
+    c.strokeStyle = '#132a1c';
+    c.fillStyle = '#132a1c';
+    c.lineCap = 'round';
+    c.lineWidth = height*0.045;
+    const tipX = baseX + lean*height*0.22;
+    const tipY = baseY - height;
+    c.beginPath();
+    c.moveTo(baseX, baseY);
+    c.quadraticCurveTo(baseX + lean*height*0.32, baseY - height*0.55, tipX, tipY);
+    c.stroke();
+    for (let i=0;i<7;i++){
+      const a = -Math.PI/2 + (i-3)*0.42;
+      const len = height*0.42;
+      c.beginPath();
+      c.moveTo(tipX, tipY);
+      c.quadraticCurveTo(
+        tipX + Math.cos(a)*len*0.6, tipY + Math.sin(a)*len*0.35 - height*0.08,
+        tipX + Math.cos(a)*len, tipY + Math.sin(a)*len*0.6
+      );
+      c.lineWidth = height*0.03;
+      c.stroke();
+    }
+    c.restore();
+  }
+
+  function drawBoat(c, x, y, scale){
+    c.save();
+    c.translate(x,y); c.scale(scale,scale);
+    c.fillStyle = '#1b2a3a';
+    c.beginPath();
+    c.moveTo(-42,0);
+    c.quadraticCurveTo(0,18,42,0);
+    c.quadraticCurveTo(20,-5,-20,-5);
+    c.closePath();
+    c.fill();
+    c.strokeStyle = '#1b2a3a';
+    c.lineWidth = 3;
+    c.beginPath(); c.moveTo(0,-5); c.lineTo(0,-42); c.stroke();
+    c.fillStyle = '#a8462a';
+    c.beginPath(); c.moveTo(0,-42); c.lineTo(24,-31); c.lineTo(0,-22); c.closePath(); c.fill();
+    c.restore();
+  }
+
+  function drawScooter(c, x, y, scale){
+    c.save();
+    c.translate(x,y); c.scale(scale,scale);
+    c.fillStyle = '#1b2a3a';
+    c.beginPath(); c.arc(-28,10,13,0,Math.PI*2); c.fill();
+    c.beginPath(); c.arc(28,10,13,0,Math.PI*2); c.fill();
+    c.fillStyle = '#1b2a3a';
+    c.beginPath();
+    c.moveTo(-32,10);
+    c.quadraticCurveTo(-18,-13,2,-9);
+    c.quadraticCurveTo(12,-28,26,-26);
+    c.quadraticCurveTo(32,-10,32,10);
+    c.closePath();
+    c.fill();
+    c.fillStyle = '#a8462a';
+    c.fillRect(-4,-30,4,14);
+    c.restore();
+  }
+
+  function drawBird(c, x, y, scale){
+    c.save();
+    c.translate(x,y); c.scale(scale,scale);
+    c.strokeStyle = 'rgba(12,31,22,0.5)';
+    c.lineWidth = 3;
+    c.beginPath();
+    c.moveTo(-9,0); c.quadraticCurveTo(-4,-7,0,0);
+    c.quadraticCurveTo(4,-7,9,0);
+    c.stroke();
+    c.restore();
+  }
+
+  function renderBackground(c){
+    // sky
+    const sky = c.createLinearGradient(0,0,0,HORIZON);
+    sky.addColorStop(0,'#241539');
+    sky.addColorStop(0.32,'#6a3459');
+    sky.addColorStop(0.62,'#dd6a3a');
+    sky.addColorStop(1,'#f7bd5c');
+    c.fillStyle = sky;
+    c.fillRect(0,0,W,HORIZON);
+
+    // sun glow
+    const sun = c.createRadialGradient(700,660,10,700,660,180);
+    sun.addColorStop(0,'rgba(255,247,222,0.95)');
+    sun.addColorStop(0.5,'rgba(255,196,102,0.55)');
+    sun.addColorStop(1,'rgba(255,196,102,0)');
+    c.fillStyle = sun;
+    c.beginPath(); c.arc(700,660,180,0,Math.PI*2); c.fill();
+
+    // birds
+    drawBird(c,150,190,1.1);
+    drawBird(c,205,225,0.9);
+    drawBird(c,800,170,1);
+
+    // sea
+    const sea = c.createLinearGradient(0,HORIZON,0,SEA_BOTTOM);
+    sea.addColorStop(0,'#e8794a');
+    sea.addColorStop(1,'#1f5065');
+    c.fillStyle = sea;
+    c.fillRect(0,HORIZON,W,SEA_BOTTOM-HORIZON);
+    // reflection streaks
+    for (let i=0;i<6;i++){
+      const yy = HORIZON + 14 + i*22;
+      const wobble = 40 - i*5;
+      c.fillStyle = `rgba(255,214,140,${0.22 - i*0.03})`;
+      c.fillRect(700-wobble, yy, wobble*2, 6);
+    }
+    drawBoat(c, 300, 900, 0.85);
+
+    // sand foreground beyond sea
+    const sand = c.createLinearGradient(0,SEA_BOTTOM,0,H);
+    sand.addColorStop(0,'#e3c48a');
+    sand.addColorStop(1,'#cda766');
+    c.fillStyle = sand;
+    c.fillRect(0,SEA_BOTTOM,W,H-SEA_BOTTOM);
+
+    // houses along the horizon
+    const houseColors = ['#d9a441','#3a6ea5','#f2e8d3','#d98a92','#5c96a8','#e0b866'];
+    const houseSpecs = [
+      [60,80,110],[165,95,130],[270,70,95],
+      [640,85,120],[745,100,140],[860,75,100]
+    ];
+    houseSpecs.forEach((spec, i) => {
+      drawHouse(c, spec[0], HORIZON, spec[1], spec[2], houseColors[i%houseColors.length], '#8a3a22');
+    });
+
+    // foreground palms flanking the scene
+    drawPalm(c, 95, 830, 430, 1);
+    drawPalm(c, 905, 815, 380, -1);
+    drawPalm(c, 40, 900, 260, 1);
+
+    // scooter on the shore road
+    drawScooter(c, 190, 828, 1.05);
+
+    // subtle shoreline texture
+    c.strokeStyle = 'rgba(255,255,255,0.18)';
+    c.lineWidth = 3;
+    for (let i=0;i<3;i++){
+      c.beginPath();
+      c.moveTo(0, SEA_BOTTOM+18+i*14);
+      for (let x=0;x<=W;x+=40){
+        c.lineTo(x, SEA_BOTTOM+18+i*14 + Math.sin(x*0.03+i)*4);
+      }
+      c.stroke();
+    }
+
+    // header scrim
+    const scrim = c.createLinearGradient(0,0,0,205);
+    scrim.addColorStop(0,'rgba(3,20,14,0.55)');
+    scrim.addColorStop(1,'rgba(3,20,14,0)');
+    c.fillStyle = scrim;
+    c.fillRect(0,0,W,205);
+
+    c.textAlign = 'center';
+    c.fillStyle = '#f2e8d3';
+    c.font = "800 52px 'Fraunces', serif";
+    c.fillText('HACKER GOA HOUSE', W/2, 116);
+    c.font = "600 20px 'JetBrains Mono', monospace";
+    c.fillStyle = '#e3c169';
+    c.save();
+    c.textAlign = 'center';
+    drawTracked(c, '· 2026 BUILDER PASS ·', W/2, 156, 4);
+    c.restore();
+  }
+
+  function drawTracked(c, text, cx, y, spacing){
+    let widths = [];
+    let total = 0;
+    for (const ch of text){ const w = c.measureText(ch).width + spacing; widths.push(w); total += w; }
+    let x = cx - total/2;
+    c.textAlign = 'left';
+    for (let i=0;i<text.length;i++){
+      c.fillText(text[i], x, y);
+      x += widths[i];
+    }
+  }
+
+  function fitText(c, text, maxWidth, startSize, fontMaker){
+    let size = startSize;
+    c.font = fontMaker(size);
+    while (c.measureText(text).width > maxWidth && size > 14){
+      size -= 2;
+      c.font = fontMaker(size);
+    }
+    return size;
+  }
+
+  function builderTitle(role){
+    const r = (role||'').toLowerCase();
+    if (/sec|pentest|red\s?team|purple|soc|siem/.test(r)) return 'Threat Whisperer';
+    if (/backend|api|server/.test(r)) return 'API Alchemist';
+    if (/front|react|ui|design/.test(r)) return 'Pixel Smith';
+    if (/data|ml|ai|model/.test(r)) return 'Signal Chaser';
+    if (/devops|infra|cloud|platform/.test(r)) return 'Pipeline Wrangler';
+    if (!r) return 'Resident Builder';
+    return 'Full-Stack Nomad';
+  }
+
+  function setStatus(msg, kind){
+    statusMsg.textContent = msg || '';
+    statusMsg.classList.toggle('err', kind==='err');
+    statusMsg.classList.toggle('ok', kind==='ok');
+  }
+
+  function makeIdCode(){
+    let code;
+    do{
+      code = 'HGH-2026-' + String(Math.floor(1000 + Math.random()*9000));
+    } while (usedCodes.has(code));
+    usedCodes.add(code);
+    return code;
+  }
+
+  function resetAll(){
+    img = null;
+    offset = {x:0,y:0};
+    zoom = 1;
+    zoomSlider.value = 100;
+    zoomRow.style.display = 'none';
+    mainHint.textContent = 'tap the card to drop in a photo · jpg, png or HEIC';
+    canvas.classList.add('empty');
+    downloadBtn.disabled = true;
+    shareBtn.disabled = true;
+    resetBtn.disabled = true;
+    setStatus('');
+    fileInput.value = '';
+    draw();
+  }
+
+  canvas.addEventListener('click', () => { if (!img) fileInput.click(); });
+  canvas.addEventListener('dragover', e => e.preventDefault());
+  canvas.addEventListener('drop', e => {
+    e.preventDefault();
+    if (e.dataTransfer.files && e.dataTransfer.files[0]) handleFile(e.dataTransfer.files[0]);
+  });
+  fileInput.addEventListener('change', e => {
+    if (e.target.files && e.target.files[0]) handleFile(e.target.files[0]);
+  });
+
+  async function handleFile(file){
+    setStatus('reading photo…');
+    const isHeic = /\.hei[cf]$/i.test(file.name) || /image\/hei[cf]/i.test(file.type);
+    let blob = file;
+    if (isHeic){
+      try{
+        setStatus('converting HEIC…');
+        await loadHeic2Any();
+        blob = await heic2any({ blob: file, toType: 'image/jpeg', quality: 0.92 });
+        if (Array.isArray(blob)) blob = blob[0];
+      }catch(err){
+        setStatus('could not convert this HEIC file — try a JPG/PNG export instead', 'err');
+        return;
+      }
+    }
+    const url = URL.createObjectURL(blob);
+    const im = new Image();
+    im.onload = () => {
+      img = im;
+      imgNatural = { w: im.naturalWidth, h: im.naturalHeight };
+      offset = {x:0, y:0};
+      zoom = 1;
+      zoomSlider.value = 100;
+      baseScale = Math.max((PHOTO.r*2)/imgNatural.w, (PHOTO.r*2)/imgNatural.h);
+      idCode = makeIdCode();
+      zoomRow.style.display = 'flex';
+      mainHint.textContent = 'drag to reposition · slide to zoom';
+      canvas.classList.remove('empty');
+      downloadBtn.disabled = false;
+      shareBtn.disabled = false;
+      resetBtn.disabled = false;
+      setStatus('sealed and ready', 'ok');
+      draw();
+    };
+    im.onerror = () => setStatus('could not read that image — try a different file', 'err');
+    im.src = url;
+  }
+
+  let heicPromise = null;
+  function loadHeic2Any(){
+    if (window.heic2any) return Promise.resolve();
+    if (heicPromise) return heicPromise;
+    heicPromise = new Promise((resolve, reject) => {
+      const s = document.createElement('script');
+      s.src = 'https://cdnjs.cloudflare.com/ajax/libs/heic2any/0.0.4/heic2any.min.js';
+      s.onload = () => resolve();
+      s.onerror = () => reject(new Error('heic2any failed to load'));
+      document.head.appendChild(s);
+    });
+    return heicPromise;
+  }
+
+  canvas.addEventListener('pointerdown', e => {
+    if (!img) return;
+    dragging = true;
+    canvas.classList.add('dragging');
+    dragStart = { x:e.clientX, y:e.clientY, offX:offset.x, offY:offset.y };
+    canvas.setPointerCapture(e.pointerId);
+  });
+  canvas.addEventListener('pointermove', e => {
+    if (!dragging || !img) return;
+    const rect = canvas.getBoundingClientRect();
+    const scaleFactor = W/rect.width;
+    offset.x = dragStart.offX + (e.clientX - dragStart.x) * scaleFactor;
+    offset.y = dragStart.offY + (e.clientY - dragStart.y) * scaleFactor;
+    clampOffset();
+    draw();
+  });
+  function endDrag(){ dragging = false; canvas.classList.remove('dragging'); }
+  canvas.addEventListener('pointerup', endDrag);
+  canvas.addEventListener('pointerleave', endDrag);
+
+  canvas.addEventListener('wheel', e => {
+    if (!img) return;
+    e.preventDefault();
+    const delta = e.deltaY > 0 ? -5 : 5;
+    zoomSlider.value = Math.min(300, Math.max(100, Number(zoomSlider.value) + delta));
+    zoomSlider.dispatchEvent(new Event('input'));
+  }, { passive:false });
+
+  zoomSlider.addEventListener('input', () => {
+    zoom = Number(zoomSlider.value)/100;
+    clampOffset();
+    draw();
+  });
+
+  function clampOffset(){
+    if (!img) return;
+    const scale = baseScale * zoom;
+    const dispW = imgNatural.w * scale;
+    const dispH = imgNatural.h * scale;
+    const maxX = Math.max(0, (dispW - PHOTO.r*2)/2);
+    const maxY = Math.max(0, (dispH - PHOTO.r*2)/2);
+    offset.x = Math.min(maxX, Math.max(-maxX, offset.x));
+    offset.y = Math.min(maxY, Math.max(-maxY, offset.y));
+  }
+
+  nameInput.addEventListener('input', draw);
+  roleInput.addEventListener('input', draw);
+
+  function drawArcTextAt(c, cx, cy, radius, rotateDeg, text, font, color, spacing){
+    c.save();
+    c.translate(cx, cy);
+    c.rotate(rotateDeg * Math.PI/180);
+    c.font = font;
+    c.fillStyle = color;
+    c.textAlign = 'center';
+    c.textBaseline = 'middle';
+    let angle = -90;
+    for (const ch of text.split('')){
+      const rad = angle * Math.PI/180;
+      c.save();
+      c.rotate(rad);
+      c.translate(0, -radius);
+      c.fillText(ch, 0, 0);
+      c.restore();
+      const w = c.measureText(ch).width;
+      angle += (w/radius)*(180/Math.PI) + spacing;
+    }
+    c.restore();
+  }
+
+  function drawPostageStamp(c, S){
+    const hw = S.w/2, hh = S.h/2;
+    const bumpR = 7;
+
+    c.save();
+    c.translate(S.cx, S.cy);
+    c.rotate(S.rot * Math.PI/180);
+    c.shadowColor = 'rgba(0,0,0,0.4)';
+    c.shadowBlur = 22;
+    c.shadowOffsetX = 4;
+    c.shadowOffsetY = 8;
+
+    // base stamp paper
+    c.beginPath();
+    c.rect(-hw, -hh, S.w, S.h);
+    c.fillStyle = '#f2e8d3';
+    c.fill();
+    c.shadowColor = 'transparent';
+
+    // punch perforation holes along the perimeter (true transparent holes)
+    c.globalCompositeOperation = 'destination-out';
+    const topN = Math.round(S.w / (bumpR*2.2));
+    const sideN = Math.round(S.h / (bumpR*2.2));
+    for (let i=0;i<=topN;i++){
+      const x = -hw + (S.w/topN)*i;
+      c.beginPath(); c.arc(x, -hh, bumpR, 0, Math.PI*2); c.fill();
+      c.beginPath(); c.arc(x, hh, bumpR, 0, Math.PI*2); c.fill();
+    }
+    for (let i=0;i<=sideN;i++){
+      const y = -hh + (S.h/sideN)*i;
+      c.beginPath(); c.arc(-hw, y, bumpR, 0, Math.PI*2); c.fill();
+      c.beginPath(); c.arc(hw, y, bumpR, 0, Math.PI*2); c.fill();
+    }
+    c.globalCompositeOperation = 'source-over';
+
+    // inner frame, like a definitive-stamp border
+    c.strokeStyle = '#a8462a';
+    c.lineWidth = 2.5;
+    c.strokeRect(-hw+16, -hh+16, S.w-32, S.h-32);
+    c.strokeStyle = 'rgba(168,70,42,0.5)';
+    c.lineWidth = 1;
+    c.strokeRect(-hw+20, -hh+20, S.w-40, S.h-40);
+
+    // header text
+    c.textAlign = 'center';
+    c.fillStyle = '#a8462a';
+    c.font = "700 12px 'JetBrains Mono', monospace";
+    c.fillText('HACKER GOA HOUSE', 0, -hh+40);
+
+    // mini illustrated scene
+    const sceneY0 = -hh+52, sceneY1 = -hh+150, sceneX0 = -hw+26, sceneX1 = hw-26;
+    const sceneW = sceneX1-sceneX0, sceneH = sceneY1-sceneY0;
+    const skyG = c.createLinearGradient(0,sceneY0,0,sceneY1);
+    skyG.addColorStop(0,'#6a3459');
+    skyG.addColorStop(0.55,'#dd6a3a');
+    skyG.addColorStop(1,'#f7bd5c');
+    c.fillStyle = skyG;
+    c.fillRect(sceneX0, sceneY0, sceneW, sceneH*0.72);
+    c.fillStyle = '#1f5065';
+    c.fillRect(sceneX0, sceneY0+sceneH*0.72, sceneW, sceneH*0.28);
+    // sun
+    c.beginPath();
+    c.arc(sceneX0+sceneW*0.62, sceneY0+sceneH*0.5, sceneH*0.26, 0, Math.PI*2);
+    c.fillStyle = '#ffd97a';
+    c.fill();
+    // tiny palm silhouette
+    c.strokeStyle = '#132a1c';
+    c.fillStyle = '#132a1c';
+    c.lineWidth = 3;
+    c.lineCap = 'round';
+    const px = sceneX0+sceneW*0.22, py = sceneY0+sceneH*0.72;
+    c.beginPath();
+    c.moveTo(px, py);
+    c.quadraticCurveTo(px+6, py-24, px+2, py-40);
+    c.stroke();
+    for (let i=-2;i<=2;i++){
+      const a = i*0.5;
+      c.beginPath();
+      c.moveTo(px+2, py-40);
+      c.quadraticCurveTo(px+2+Math.cos(a)*14, py-40+Math.sin(a)*8-8, px+2+Math.cos(a)*20, py-40+Math.sin(a)*14);
+      c.lineWidth = 2;
+      c.stroke();
+    }
+    c.strokeStyle = 'rgba(168,70,42,0.5)';
+    c.lineWidth = 1;
+    c.strokeRect(sceneX0, sceneY0, sceneW, sceneH);
+
+    // caption block
+    c.fillStyle = '#0c1f16';
+    c.font = "700 13.5px 'JetBrains Mono', monospace";
+    c.fillText('BUILT IN GOA', 0, sceneY1+30);
+    c.font = "500 11px 'JetBrains Mono', monospace";
+    c.fillStyle = '#7c331c';
+    c.fillText('SHIPPED FROM PARADISE', 0, sceneY1+50);
+
+    // divider
+    c.strokeStyle = 'rgba(168,70,42,0.4)';
+    c.beginPath(); c.moveTo(-hw+34, sceneY1+66); c.lineTo(hw-34, sceneY1+66); c.stroke();
+
+    // denomination-style corner
+    c.font = "700 26px 'Fraunces', serif";
+    c.fillStyle = '#a8462a';
+    c.fillText('2026', 0, hh-30);
+    c.font = "600 9.5px 'JetBrains Mono', monospace";
+    c.fillStyle = '#7c331c';
+    c.fillText('HGH POSTAL · GOA', 0, hh-14);
+
+    c.restore();
+  }
+
+  function draw(){
+    ctx.clearRect(0,0,W,H);
+    ctx.drawImage(bg, 0, 0);
+
+    // photo drop shadow
+    ctx.save();
+    ctx.shadowColor = 'rgba(0,0,0,0.45)';
+    ctx.shadowBlur = 30;
+    ctx.shadowOffsetY = 10;
+    ctx.beginPath();
+    ctx.arc(PHOTO.cx, PHOTO.cy, PHOTO.r, 0, Math.PI*2);
+    ctx.fillStyle = '#cabb96';
+    ctx.fill();
+    ctx.restore();
+
+    // photo
+    ctx.save();
+    ctx.beginPath();
+    ctx.arc(PHOTO.cx, PHOTO.cy, PHOTO.r, 0, Math.PI*2);
+    ctx.clip();
+    if (img){
+      const scale = baseScale * zoom;
+      const dispW = imgNatural.w * scale;
+      const dispH = imgNatural.h * scale;
+      const dx = PHOTO.cx - dispW/2 - offset.x;
+      const dy = PHOTO.cy - dispH/2 - offset.y;
+      ctx.drawImage(img, dx, dy, dispW, dispH);
+    } else {
+      ctx.fillStyle = '#cabb96';
+      ctx.fillRect(PHOTO.cx-PHOTO.r, PHOTO.cy-PHOTO.r, PHOTO.r*2, PHOTO.r*2);
+      ctx.fillStyle = '#0c1f16';
+      ctx.textAlign = 'center';
+      ctx.font = "600 24px 'Space Grotesk', sans-serif";
+      ctx.fillText('tap to add photo', PHOTO.cx, PHOTO.cy);
+    }
+    ctx.restore();
+
+    // photo ring
+    ctx.lineWidth = 16;
+    ctx.strokeStyle = '#f2e8d3';
+    ctx.beginPath(); ctx.arc(PHOTO.cx, PHOTO.cy, PHOTO.r, 0, Math.PI*2); ctx.stroke();
+    ctx.lineWidth = 5;
+    ctx.strokeStyle = '#c9a227';
+    ctx.beginPath(); ctx.arc(PHOTO.cx, PHOTO.cy, PHOTO.r+9, 0, Math.PI*2); ctx.stroke();
+
+    drawPostageStamp(ctx, STAMP);
+
+    // ---- ID panel ----
+    roundRect(ctx, PANEL.x0, PANEL.y0, PANEL.x1-PANEL.x0, PANEL.y1-PANEL.y0, PANEL.r);
+    ctx.fillStyle = 'rgba(242,232,211,0.97)';
+    ctx.fill();
+    ctx.lineWidth = 5;
+    ctx.strokeStyle = '#c9a227';
+    ctx.stroke();
+
+    const midX = (PANEL.x0+PANEL.x1)/2;
+
+    ctx.textAlign = 'center';
+    ctx.fillStyle = '#a8462a';
+    ctx.font = "700 16px 'JetBrains Mono', monospace";
+    drawTracked(ctx, 'BUILDER ID', midX, PANEL.y0+42, 4);
+
+    const name = (nameInput.value || 'YOUR NAME').toUpperCase();
+    ctx.fillStyle = '#0c1f16';
+    const nameSize = fitText(ctx, name, PANEL.x1-PANEL.x0-60, 54, s => `800 ${s}px 'Fraunces', serif`);
+    ctx.font = `800 ${nameSize}px 'Fraunces', serif`;
+    ctx.fillText(name, midX, PANEL.y0+108);
+
+    const role = roleInput.value.trim();
+    const title = builderTitle(role);
+    ctx.font = "italic 500 22px 'Fraunces', serif";
+    ctx.fillStyle = '#7c331c';
+    ctx.fillText(title, midX, PANEL.y0+148);
+
+    if (role){
+      ctx.font = "600 11px 'JetBrains Mono', monospace";
+      ctx.fillStyle = '#5c96a8';
+      drawTracked(ctx, 'ROLE / STACK', midX, PANEL.y0+180, 3);
+
+      const roleText = role.toUpperCase();
+      const maxTextW = PANEL.x1 - PANEL.x0 - 100;
+      const roleFont = fitText(ctx, roleText, maxTextW, 24, s => `600 ${s}px 'Space Grotesk', sans-serif`);
+      ctx.font = `600 ${roleFont}px 'Space Grotesk', sans-serif`;
+      ctx.fillStyle = '#2f6f86';
+      ctx.fillText(roleText, midX, PANEL.y0+210);
+    }
+
+    // decorative tile-dot divider
+    drawDotDivider(ctx, PANEL.x0+30, PANEL.x1-30, PANEL.y0+236);
+
+    // ---- ID number, large, front and center ----
+    ctx.font = "700 13px 'JetBrains Mono', monospace";
+    ctx.fillStyle = '#a8462a';
+    drawTracked(ctx, 'ID NO.', midX, PANEL.y0+278, 4);
+    ctx.font = "800 46px 'JetBrains Mono', monospace";
+    ctx.fillStyle = '#0c1f16';
+    ctx.fillText(idCode, midX, PANEL.y0+332);
+
+    // barcode strip generated from the id code itself
+    drawBarcode(ctx, idCode, PANEL.x0+70, PANEL.x1-70, PANEL.y0+356, PANEL.y0+392);
+
+    // guilloché security-pattern band — fills the card, feels authentic
+    drawGuilloche(ctx, PANEL.x0+30, PANEL.x1-30, PANEL.y0+420, PANEL.y1-140);
+
+    // dashed perforation
+    const perfY = PANEL.y1 - 96;
+    ctx.strokeStyle = 'rgba(12,31,22,0.3)';
+    ctx.lineWidth = 2;
+    ctx.setLineDash([6,8]);
+    ctx.beginPath();
+    ctx.moveTo(PANEL.x0+20, perfY);
+    ctx.lineTo(PANEL.x1-20, perfY);
+    ctx.stroke();
+    ctx.setLineDash([]);
+
+    ctx.textAlign = 'left';
+    ctx.font = "600 13px 'JetBrains Mono', monospace";
+    ctx.fillStyle = '#5c96a8';
+    ctx.fillText('HACKER GOA HOUSE · 2026', PANEL.x0+30, perfY+38);
+    ctx.textAlign = 'right';
+    ctx.fillStyle = '#7c331c';
+    ctx.font = "italic 500 15px 'Fraunces', serif";
+    ctx.fillText('verified builder', PANEL.x1-30, perfY+38);
+
+    ctx.textAlign = 'center';
+
+    punchLanyardHole(ctx);
+  }
+
+  function drawDotDivider(c, x0, x1, y){
+    c.strokeStyle = 'rgba(168,70,42,0.25)';
+    c.lineWidth = 1.5;
+    c.setLineDash([1,7]);
+    c.beginPath(); c.moveTo(x0,y); c.lineTo(x1,y); c.stroke();
+    c.setLineDash([]);
+    c.fillStyle = '#c9a227';
+    c.beginPath(); c.arc((x0+x1)/2, y, 3.5, 0, Math.PI*2); c.fill();
+  }
+
+  function drawBarcode(c, seed, x0, x1, y0, y1){
+    const s = seed.replace(/[^0-9]/g,'') || '12345678';
+    let x = x0, i = 0;
+    while (x < x1 - 3){
+      const w = 2 + (s.charCodeAt(i % s.length) % 5);
+      const gap = 2 + (s.charCodeAt((i+2) % s.length) % 4);
+      c.fillStyle = 'rgba(12,31,22,0.78)';
+      c.fillRect(x, y0, w, y1-y0);
+      x += w + gap;
+      i++;
+    }
+  }
+
+  function drawGuilloche(c, x0, x1, y0, y1){
+    c.save();
+    c.beginPath();
+    c.rect(x0, y0, x1-x0, y1-y0);
+    c.clip();
+    const colors = ['rgba(168,70,42,0.20)','rgba(47,111,134,0.20)','rgba(201,162,39,0.22)'];
+    const midY = (y0+y1)/2, amp = (y1-y0)/2 - 8;
+    for (let w=0; w<colors.length; w++){
+      c.beginPath();
+      c.strokeStyle = colors[w];
+      c.lineWidth = 1.3;
+      for (let x=x0; x<=x1; x+=4){
+        const y = midY + Math.sin((x*0.05) + w*2.1) * amp;
+        if (x===x0) c.moveTo(x,y); else c.lineTo(x,y);
+      }
+      c.stroke();
+    }
+    c.restore();
+  }
+
+  function punchLanyardHole(c){
+    const holeW = 108, holeH = 22;
+    const hx = W/2, hy = 40;
+    c.save();
+    c.globalCompositeOperation = 'destination-out';
+    roundRect(c, hx-holeW/2, hy-holeH/2, holeW, holeH, holeH/2);
+    c.fill();
+    c.restore();
+
+    c.save();
+    roundRect(c, hx-holeW/2-2, hy-holeH/2-2, holeW+4, holeH+4, holeH/2+2);
+    c.strokeStyle = 'rgba(0,0,0,0.4)';
+    c.lineWidth = 2.5;
+    c.stroke();
+    roundRect(c, hx-holeW/2-5, hy-holeH/2-5, holeW+10, holeH+10, holeH/2+5);
+    c.strokeStyle = 'rgba(0,0,0,0.15)';
+    c.lineWidth = 2;
+    c.stroke();
+    c.restore();
+  }
+
+  function canvasToBlob(){
+    return new Promise(resolve => canvas.toBlob(resolve, 'image/png', 0.95));
+  }
+
+  downloadBtn.addEventListener('click', async () => {
+    if (!img) return;
+    setStatus('preparing download…');
+    const blob = await canvasToBlob();
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'hacker-goa-house-2026-builder-id.png';
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setTimeout(()=>URL.revokeObjectURL(url), 4000);
+    setStatus('downloaded — ready to post', 'ok');
+  });
+
+  shareBtn.addEventListener('click', async () => {
+    if (!img) return;
+    setStatus('preparing share…');
+    const blob = await canvasToBlob();
+    const caption = DEFAULT_CAPTION;
+    const file = new File([blob], 'hacker-goa-house-2026-builder-id.png', { type: 'image/png' });
+
+    if (navigator.canShare && navigator.canShare({ files: [file] })){
+      try{
+        await navigator.share({ files: [file], text: caption });
+        setStatus('shared 🌴', 'ok');
+        return;
+      }catch(err){
+        if (err && err.name === 'AbortError'){ setStatus(''); return; }
+      }
+    }
+
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'hacker-goa-house-2026-builder-id.png';
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setTimeout(()=>URL.revokeObjectURL(url), 4000);
+
+    const intent = 'https://twitter.com/intent/tweet?text=' + encodeURIComponent(caption);
+    window.open(intent, '_blank');
+    setStatus('image downloaded — attach it in the X window that opened', 'ok');
+  });
+
+  resetBtn.addEventListener('click', resetAll);
+
+  draw();
+})();
+</script>
+</body>
+</html>
